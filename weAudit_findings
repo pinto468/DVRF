@@ -1,0 +1,103 @@
+---
+---
+---
+### Title
+No vulnerability there
+
+### Severity
+Informational
+
+### Difficulty
+Undetermined
+
+### Type
+Data Exposure
+
+### Target
+Pwnable Source/ShellCode_Required/socket_bof.c
+
+## Description
+This print may seem like a security issue, but it's not. Under normal conditions all argv arguments are terminated with 0 so printf can only print the argument itself. The only issue is invoking the program via execve, but if attacker can do this, he already has full control over system and doesn't need to cause DOS.
+
+## Exploit Scenario
+
+
+## Recommendations
+Short term, 
+Long term, 
+
+
+
+Permalink:
+https://github.com/pinto468/DVRF/blob/2cb5ca3c7dfeca1a8c86306ecacaa6cd565d13b6/Pwnable Source/ShellCode_Required/socket_bof.c#L15-L20
+
+
+
+---
+---
+---
+### Title
+Buffer overflow
+
+### Severity
+High
+
+### Difficulty
+Low
+
+### Type
+Access Controls
+
+### Target
+Pwnable Source/ShellCode_Required/socket_bof.c
+
+## Description
+Endstr holds 50 bytes, but sprintf writes a 25-byte literal prefix ("nom nom nom, you sent me ") plus up to 500 bytes of str — as much as ~525 bytes into a 50-byte buffer. Sprintf does no bounds checking, so anything over 24 bytes everwrites the stack, including the frame pointer and return address. The severity is high  mainly because the attacker has potentially full access to the str variable.
+
+## Exploit Scenario
+Attacker writes the message over 24 bytes, overwriting the return address and frame pointer, newly ppointing into malicious code in memory. He could potentially insert the code directly in the same message.
+
+## Recommendations
+use this snprintf(endstr, sizeof(endstr), "nom nom nom, you sent me %s", str); to maximally write the length of the string and not overwrite stack
+
+
+
+Permalink:
+https://github.com/pinto468/DVRF/blob/2cb5ca3c7dfeca1a8c86306ecacaa6cd565d13b6/Pwnable Source/ShellCode_Required/socket_bof.c#L58-L58
+
+
+
+---
+---
+---
+### Title
+OOB
+
+### Severity
+High
+
+### Difficulty
+Low
+
+### Type
+Data Exposure
+
+### Target
+Pwnable Source/ShellCode_Required/socket_bof.c
+
+## Description
+the str not only can overwrite the stack data, but also doesn't have to end with 0. If it doesn't and attacker has access to standard output, he could read data from stack.
+
+## Exploit Scenario
+Attacker sends a meesage not terminated with 0, sprintf does it's job and now we print out "Sent back -  {data}" directly to standard output.
+
+## Recommendations
+when receiving str from socket, terminate it with 0 by resading only 499 bytes and adding 0 to end or print out 500 bytes at max using printf("Sent back - %.500s", str). The best way is to use both.
+
+
+Permalink:
+https://github.com/pinto468/DVRF/blob/2cb5ca3c7dfeca1a8c86306ecacaa6cd565d13b6/Pwnable Source/ShellCode_Required/socket_bof.c#L59-L59
+https://github.com/pinto468/DVRF/blob/2cb5ca3c7dfeca1a8c86306ecacaa6cd565d13b6/Pwnable Source/ShellCode_Required/socket_bof.c#L57-L57
+
+
+
